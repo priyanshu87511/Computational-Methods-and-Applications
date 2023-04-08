@@ -328,12 +328,15 @@ class Polynomial:
     
 def forwardEular(start, end, steps):
     
+    # Define the function f(t,x) = -2x
     def func():
         return lambda t,x : -2 * x
     
+    # Define the actual solution of the differential equation
     def actualfunc():
         return lambda t : 5 * math.exp(-2 * t)
     
+    # Loop over each step size and compute the approximate solution using forward Euler's method
     for step in steps:
         f = func()
         xvalues = []
@@ -341,16 +344,19 @@ def forwardEular(start, end, steps):
         while (var <= end):
             xvalues.append(var)
             var += step
-        yvalues = [5]
+        yvalues = [5] # initial condition
         for i in range(0, len(xvalues) - 1):
+            # Compute the next value of y using the forward Euler's method
             yvalues.append(yvalues[i] + f(xvalues[i], yvalues[i])*step)
         points = []
         for i in range(0, len(xvalues)):
             points.append([xvalues[i], yvalues[i]])
-        print(points)
+        # Fit a polynomial curve to the computed points and plot it
         poly = Polynomial([])
         poly = poly.fitViaMatrixMethod(points)
         poly.show(start, end, str(step))
+    
+    # Compute the actual values of y and plot them
     xvalues = np.arange(start, end, 0.1)
     yvalues = []
     actual = actualfunc()
@@ -359,6 +365,8 @@ def forwardEular(start, end, steps):
     poly = Polynomial([])
     poly = poly.fitViaMatrixMethod(yvalues)
     poly.show(start, end, "Actual")
+    
+    # Add legend to the plot, save it to a file and display it
     plt.legend()
     plt.savefig("q1.png")
     plt.show()

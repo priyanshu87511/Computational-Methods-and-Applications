@@ -325,43 +325,63 @@ class Polynomial:
             for e in r:
                 print("{:.2f}".format(e), end="\t")
             print("\n")
-    
+
+# Define the backward Euler method function
 def backwardEular(start, end, steps):
     
+    # Define the function being solved
     def func():
         return lambda t,x,step : x / (1 + 2*step)
     
+    # Define the actual solution function for comparison
     def actualfunc():
         return lambda t : 5 * math.exp(-2 * t)
     
+    # Loop over all step sizes provided
     for step in steps:
+        
+        # Get the function to be solved
         f = func()
+        
+        # Initialize arrays to store x and y values
         xvalues = []
         var = start
         while (var <= end):
             xvalues.append(var)
             var += step
         yvalues = [5]
+        
+        # Use the backward Euler method to solve for y values
         for i in range(0, len(xvalues) - 1):
             yvalues.append(f(xvalues[i], yvalues[i],step))
+        
+        # Store points as [x, y] pairs for polynomial fitting
         points = []
         for i in range(0, len(xvalues)):
             points.append([xvalues[i], yvalues[i]])
-        print(points)
+        
+        # Fit a polynomial to the points using matrix method and display the result
         poly = Polynomial([])
         poly = poly.fitViaMatrixMethod(points)
         poly.show(start, end, str(step))
+    
+    # Generate actual values for comparison
     xvalues = np.arange(start, end, 0.1)
     yvalues = []
     actual = actualfunc()
     for val in xvalues:
         yvalues.append([val, actual(val)])
+    
+    # Fit a polynomial to the actual values using matrix method and display the result
     poly = Polynomial([])
     poly = poly.fitViaMatrixMethod(yvalues)
     poly.show(start, end, "Actual")
+    
+    # Save and display the plot
     plt.legend()
     plt.savefig("q2.png")
     plt.show()
+
   
 
 # test
