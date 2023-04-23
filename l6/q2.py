@@ -329,6 +329,9 @@ class Polynomial:
 # Define the backward Euler method function
 def backwardEular(start, end, steps):
     
+    if(start > end):
+        raise Exception("start is big")
+    
     # Define the function being solved
     def func():
         return lambda t,x,step : x / (1 + 2*step)

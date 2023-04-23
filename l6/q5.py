@@ -26,6 +26,7 @@ def solve(x, y):
 
 # function to calculate the variables of the system for plotting
 def variables_plot(r, v, T ,m1 = 1, m2 = 1, m3 = 1):
+    # as acceleration of all bodies is already given by equation mass doesn't play any role
     mass1 = m1
     mass2 = m2
     mass3 = m3
@@ -78,6 +79,9 @@ def animate(i):
 anim = FuncAnimation(fig, animate, init_func=init,
                      frames=200, interval=100, blit=True)
 
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("three body problem")
 plt.grid(True)   
 plt.show()
 anim.save('circle.gif', writer='ffmpeg', fps=5)

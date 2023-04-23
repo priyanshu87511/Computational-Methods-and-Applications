@@ -328,6 +328,9 @@ class Polynomial:
     
 def forwardEular(start, end, steps):
     
+    if(start > end):
+        raise Exception("start is greater than end")
+    
     # Define the function f(t,x) = -2x
     def func():
         return lambda t,x : -2 * x

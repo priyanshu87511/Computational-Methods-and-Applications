@@ -105,15 +105,13 @@ class ERRandomGraph(UndirectedGraph):
         keys = list(keyz)
         print(keys)
         ans = []
-        for ite in range(10):
-            for i in range (len(keyz)):
-                for j in range (i+1, len(keyz)):
-                    randm = rand.random()
-                    # check
-                    if(randm < pro):
-                        self.adj[keys[i]].append(keys[j])
-                        self.adj[keys[j]].append(keys[i])
-            ans.append(self.adj)
+        for i in range (len(keyz)):
+            for j in range (i+1, len(keyz)):
+                randm = rand.random()
+                # check
+                if(randm < pro):
+                    self.adj[keys[i]].append(keys[j])
+                    self.adj[keys[j]].append(keys[i])
 
 
 

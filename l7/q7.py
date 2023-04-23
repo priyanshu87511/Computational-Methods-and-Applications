@@ -1,7 +1,9 @@
-from matplotlib import pyplot as plt
+import random
 import math
+from matplotlib import pyplot as plt
 import numpy as np
 from numpy.linalg import tensorsolve as slve
+import copy
 
 # creating polynomial class
 class Polynomial:
@@ -88,8 +90,8 @@ class Polynomial:
             raise Exception("Can't divide")
         return self
 
-    # show the polynomial in range and passing values of lists of points to be scattered
-    def show(self, start, end, val1 = [], val2 = []):
+    # show the polynomial in range
+    def show(self, start, end):
         xvalues = np.arange(start,end,0.01)
         yvalues = []
         # for all the values find the y value
@@ -100,12 +102,11 @@ class Polynomial:
         poly = ""
         for i in range(len(self.poly)):
             poly+="+ (" + str(self.poly[i]) + ") x^" + str(i) + " " 
-        plt.title("Lagrange Polynomial")
-        plt.scatter(val1, val2, c="r")
+        plt.title("Plot of the polynomial" + poly)
         plt.xlabel("x")
         plt.ylabel("P(x)")
         plt.grid(True)
-        plt.savefig("q3.png")
+        plt.savefig("q4.png")
         plt.show()
 
     # fit via matrix we used the library of numpy
@@ -164,31 +165,19 @@ class Polynomial:
         # plotting the graph hereby
         plt.scatter(xvalues, yvalues, color="red")
         self.show(-1,3)
-        
+
     # adding derivative function
-    def derivative(self):
+    def derivative(self, polyn):
         lisht = []
         # for all terms containing x finding their coefficients after differentiation        lisht = []
-        for val in range(1, len(self)):
-            lisht.append(self.poly[val] * val)
+        for val in range(1, len(polyn)):
+            lisht.append(polyn.poly[val] * val)
         # if there is only constant
-        if(len(self) == 1):
+        if(len(polyn) == 1):
             lisht.append(0)
         # return the derivative polynomial
-        self.poly = lisht
-        return self
-
-    # adding area function
-    def area(self, start, to):
-        # starting with constant which is taken to be zero
-        lisht = [0]
-        # integrated coefficients are appended in the list
-        for val in range(0, len(self)):
-            lisht.append(self.poly[val] / (val + 1))
-        #   returning their differences which is the area under polynomial
-        self.poly = lisht
-        return self[to]-self[start]
-    
+        polyn.poly = lisht
+        return polyn
 
     # this function returns the bestfit polynomial for a tuplelist
     def bestfit(self, tuplelist, n):
@@ -252,43 +241,82 @@ class Polynomial:
                 raise Exception("Two points with same x can not be accepted for a function")
         # finding the polynomial of xval
         self = Polynomial(xval)
-        self.show(xmin, ymn, xvals, yvals)
+        # self.show(xmin, ymn, xvals, yvals)
         # plotted the graph and returned the polynomial
         return self
 
-    # defining the Legendre polynomial
-    def Legendre(self, n = 5):
-        # n should be of type int
-        if(type(n) != int):
-            raise Exception("n should be of type int")
-        # dimension can not be negative
-        if(n<0):
-            raise Exception("dimension can not be negative")
-        # defining polynomial
-        poly = Polynomial([1])
-        # having polynomial -1 + x^2
-        p = Polynomial([-1,0,1])
-        # if n is the negative number
-        if(n < 0):
-            raise Exception("Negative values provided")
-        # for i in range of n finding the polynomial for derivation of it
-        for i in range(n):
-            poly = p*poly
-        # again derivating it for n times
-        for i in range(n):
-            poly = poly.derivative()
-        # finding the number for division
-        divi = math.factorial(n) * (2**n)
-        # finding poly after division
-        poly = poly / divi
-        self = poly
-        # showing graph in this range
-        self.show(-1, 1)
-        # returning the polynomial
-        return self
+    # Method to calculate the roots of the polynomial using Aberth's method
+    def aberth(self, l, r):
+        if(l > r):
+            raise Exception("l should be less then r")
+        # Define the function for which roots need to be calculated
+        def f(x):
+            return x**2 - 4
+        # Generate initial points for Aberth's method
+        def initial(length):
+            pointz = []
+            h = r / (length - 1)
+            for i in range(length):
+                a = l + h*i
+                b = random.random()*2*math.pi
+                pointz.append(complex(a, math.sin(b)))
+            return pointz
+        # Generate the x and y values for the function
+        h = (r-l)/100
+        x = []
+        lt = l-h*100
+        while(lt <= r+h*(100)):
+            x.append(lt)
+            lt+=h
+        y = []
+        for val in x:
+            y.append(tuple([val, f(val)]))
+        # Fit a polynomial to the points
+        n = 5
+        poly = self.bestfit(y, n)
+        # Initialize the points for Aberth's method
+        ini = initial(n)
+        # Calculate the derivative of the polynomial
+        pol = copy.copy(poly)
+        pol = pol.derivative(pol)
+        error = 10
+        it = 0
+        # Run Aberth's method until the error is below a certain threshold or until a maximum number of iterations is reached
+        while(error > 0.001 and it < 1e4):
+            w = []
+            for i in range(len(ini)):
+                sum = 0
+                for j in range(len(ini)):
+                    if(i != j):
+                        sum += 1/(ini[i] - ini[j])
+                val = ini[i]
+                a = poly[val]
+                b = pol[val]
+                w.append((a/b) / (1 - ((a/b)*sum)))
+            for i in range(len(ini)):
+                ini[i] -= w[i]
+            error = 0
+            for i in range(len(ini)):
+                error = max(error, abs(poly[ini[i]]))
+            it += 1
+        # Filter out the roots that fall outside the range [l, r]
+        ltor = []
+        for ele in ini:
+            if(ele >= l and ele <= r):
+                ltor.append(np.round(ele, 3))
+        ltor = set(ltor)
+        return ltor
+        
 
+        
 # test
-p=Polynomial([])
-# finding p corresponding the points and dimension required
-p = p.Legendre(4)
-print(p)
+p1 = Polynomial([])
+l = p1.aberth(-10,10)
+l = sorted(l, key=lambda x: x.real)
+real = []
+# printing the unique values real
+for ele in l:
+    if(ele.imag > -0.001 and ele.imag < 0.001):
+        real.append(ele.real)
+for ele in real:
+    print(ele)
